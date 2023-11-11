@@ -72,7 +72,7 @@ resource "aws_db_subnet_group" "my_db_subnet_group" {
 // Create RDS database 
 resource "aws_db_instance" "default" {
 
-  allocated_storage = 10
+  allocated_storage = 20
 
   storage_type = "gp2"
 
@@ -80,7 +80,7 @@ resource "aws_db_instance" "default" {
 
   engine_version = "5.7"
 
-  instance_class = "db.t2.micro"
+  instance_class = "db.t3.medium"
 
   identifier = "mydb"
 
@@ -108,6 +108,66 @@ resource "aws_db_instance" "default" {
 
   final_snapshot_identifier = "db-snap"
 
+  
+  
+  # Enable enhanced monitoring
+
+  monitoring_interval = 60 # Interval in seconds (minimum 60 seconds)
+
+  monitoring_role_arn = aws_iam_role.rds_monitoring_role.arn
+
+
+
+  # Enable performance insights
+
+  performance_insights_enabled = true
+
+
 
 }
 
+// create IAM role with appropriate access to CloudWatch
+
+resource "aws_iam_role" "rds_monitoring_role" {
+
+  name = "rds-monitoring-role"
+
+
+
+  assume_role_policy = jsonencode({
+
+  Version = "2012-10-17",
+
+  Statement = [
+
+      {
+
+        Action = "sts:AssumeRole",
+
+        Effect = "Allow",
+
+        Principal = {
+
+        Service = "monitoring.rds.amazonaws.com"
+
+      }
+
+    }
+
+  ]
+
+})
+
+}
+
+// create the policy and attach it to the IAM role
+
+resource "aws_iam_policy_attachment" "rds_monitoring_attachment" {
+
+  name = "rds-monitoring-attachment"
+
+  roles = [aws_iam_role.rds_monitoring_role.name]
+
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+
+}
