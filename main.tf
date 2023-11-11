@@ -122,6 +122,15 @@ resource "aws_db_instance" "default" {
 
   performance_insights_enabled = true
 
+  
+
+  # Enable storage encryption
+
+  storage_encrypted = true
+
+  # Specify the KMS key ID for encryption (replace with your own KMS key ARN)
+
+  kms_key_id = aws_kms_key.my_kms_key.arn
 
 
 }
@@ -171,3 +180,24 @@ resource "aws_iam_policy_attachment" "rds_monitoring_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 
 }
+
+//To enable encryption for our RDS database
+
+// create the KMS key
+
+resource "aws_kms_key" "my_kms_key" {
+
+  description = "My KMS Key for RDS Encryption"
+
+  deletion_window_in_days = 30
+
+
+
+  tags = {
+
+    Name = "MyKMSKey"
+
+  }
+
+}
+
